@@ -135,10 +135,11 @@ public class KalkulatorTests
         var dir = Directory.CreateTempSubdirectory("wycenka-tmp");
         try
         {
-            // Ścieżka docelowa jest katalogiem – przeniesienie pliku tymczasowego musi się nie udać.
+            // Ścieżka docelowa jest katalogiem – przeniesienie pliku tymczasowego musi się nie udać
+            // (Windows zgłasza wtedy UnauthorizedAccessException, macOS/Linux IOException).
             var sciezka = Path.Combine(dir.FullName, "katalog.wycenka");
             Directory.CreateDirectory(sciezka);
-            Assert.ThrowsAny<IOException>(() => PlikKosztorysu.Zapisz(Przyklad(), sciezka));
+            Assert.ThrowsAny<Exception>(() => PlikKosztorysu.Zapisz(Przyklad(), sciezka));
             Assert.False(File.Exists(sciezka + ".tmp"));
         }
         finally
