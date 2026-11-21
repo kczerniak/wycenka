@@ -129,27 +129,36 @@ public static class EksportExcel
     }
 
     /// <summary>
-    /// Wiersze zestawienia kosztów do PDF i Excela. Narzuty ustawione na 0% są pomijane;
-    /// przy VAT 0% pomijany jest też wiersz brutto (byłby równy netto).
+    /// Wiersze zestawienia kosztów do PDF i Excela. Wiersze o wartości 0,00 zł są pomijane
+    /// (np. brak materiałów, narzut 0%). „Razem koszty bezpośrednie” pokazujemy tylko, gdy pod nim
+    /// są narzuty (inaczej równa się netto); „Wartość brutto” tylko przy niezerowym VAT.
     /// </summary>
-    internal static IEnumerable<(string Etykieta, decimal Wartosc, bool Pogrubienie)> WierszePodsumowania(
+    internal static List<(string Etykieta, decimal Wartosc, bool Pogrubienie)> WierszePodsumowania(
         Kosztorys k, Podsumowanie s)
     {
-        yield return ("Robocizna (R)", s.R, false);
-        yield return ("Materiały (M)", s.M, false);
-        yield return ("Sprzęt (S)", s.S, false);
-        yield return ("Razem koszty bezpośrednie", s.Bezposrednie, true);
-        if (k.ProcentKp != 0)
-            yield return ($"Koszty pośrednie (Kp) {Formaty.Proc(k.ProcentKp)} od R+S", s.Kp, false);
-        if (k.ProcentKz != 0)
-            yield return ($"Koszty zakupu (Kz) {Formaty.Proc(k.ProcentKz)} od M", s.Kz, false);
-        if (k.ProcentZ != 0)
-            yield return ($"Zysk (Z) {Formaty.Proc(k.ProcentZ)} od R+S+Kp", s.Z, false);
-        yield return ("Wartość netto", s.Netto, true);
-        if (k.ProcentVat != 0)
+        var wiersze = new List<(string, decimal, bool)>();
+
+        if (s.R != 0) wiersze.Add(("Robocizna (R)", s.R, false));
+        if (s.M != 0) wiersze.Add(("Materiały (M)", s.M, false));
+        if (s.S != 0) wiersze.Add(("Sprzęt (S)", s.S, false));
+
+        var narzuty = new List<(string, decimal, bool)>();
+        if (s.Kp != 0) narzuty.Add(($"Koszty pośrednie (Kp) {Formaty.Proc(k.ProcentKp)} od R+S", s.Kp, false));
+        if (s.Kz != 0) narzuty.Add(($"Koszty zakupu (Kz) {Formaty.Proc(k.ProcentKz)} od M", s.Kz, false));
+        if (s.Z != 0) narzuty.Add(($"Zysk (Z) {Formaty.Proc(k.ProcentZ)} od R+S+Kp", s.Z, false));
+
+        if (narzuty.Count > 0)
         {
-            yield return ($"VAT {Formaty.Proc(k.ProcentVat)}", s.Vat, false);
-            yield return ("Wartość brutto", s.Brutto, true);
+            wiersze.Add(("Razem koszty bezpośrednie", s.Bezposrednie, true));
+            wiersze.AddRange(narzuty);
         }
+
+        wiersze.Add(("Wartość netto", s.Netto, true));
+        if (s.Vat != 0)
+        {
+            wiersze.Add(($"VAT {Formaty.Proc(k.ProcentVat)}", s.Vat, false));
+            wiersze.Add(("Wartość brutto", s.Brutto, true));
+        }
+        return wiersze;
     }
 }

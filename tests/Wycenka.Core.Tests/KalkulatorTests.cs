@@ -188,6 +188,32 @@ public class KalkulatorTests
     }
 
     [Fact]
+    public void Eksport_pomija_zerowe_wiersze_R_M_S_i_zbedne_sumy()
+    {
+        // Jak w uwadze testerki: tylko sprzęt, bez narzutów i VAT.
+        var k = new Kosztorys { ProcentKp = 0, ProcentKz = 0, ProcentZ = 0, ProcentVat = 0 };
+        var d = new Dzial { Nazwa = "Transport" };
+        d.Pozycje.Add(new Pozycja { Opis = "Dowóz", Jm = "kpl", Ilosc = 1, CenaS = 23.59m });
+        k.Dzialy.Add(d);
+
+        var t = TekstExcela(k);
+        Assert.Contains("Sprzęt (S)", t);
+        Assert.Contains("Wartość netto", t);
+        Assert.DoesNotContain("Robocizna (R)", t);
+        Assert.DoesNotContain("Materiały (M)", t);
+        Assert.DoesNotContain("Razem koszty bezpośrednie", t);   // równałoby się netto
+        Assert.DoesNotContain("Wartość brutto", t);
+
+        // Z narzutem: „Razem koszty bezpośrednie” wraca, a Kz od zerowych materiałów nie.
+        k.ProcentKp = 10;
+        k.ProcentKz = 5;
+        var t2 = TekstExcela(k);
+        Assert.Contains("Razem koszty bezpośrednie", t2);
+        Assert.Contains("Koszty pośrednie", t2);
+        Assert.DoesNotContain("Koszty zakupu", t2);
+    }
+
+    [Fact]
     public void Eksporty_tworza_pliki()
     {
         var k = Przyklad();
