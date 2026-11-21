@@ -2,8 +2,6 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Avalonia;
-using Avalonia.Styling;
 
 namespace Wycenka.App.Services;
 
@@ -12,6 +10,7 @@ public enum Motyw
     Systemowy,
     Jasny,
     Ciemny,
+    Brazowy,
 }
 
 /// <summary>
@@ -30,6 +29,9 @@ public sealed class UstawieniaAplikacji
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Wycenka", "ustawienia.json");
 
     public Motyw Motyw { get; set; } = Motyw.Systemowy;
+
+    /// <summary>Ciemny wariant, na który przełącza przycisk na pasku (Ciemny albo Brązowy).</summary>
+    public Motyw OstatniCiemny { get; set; } = Motyw.Ciemny;
 
     [JsonIgnore]
     public string Sciezka { get; private set; } = DomyslnaSciezka;
@@ -64,21 +66,4 @@ public sealed class UstawieniaAplikacji
             // Brak zapisu ustawień nie może blokować pracy.
         }
     }
-}
-
-/// <summary>Przełączanie jasnego/ciemnego motywu całej aplikacji.</summary>
-public static class MotywAplikacji
-{
-    public static void Zastosuj(Motyw motyw)
-    {
-        if (Application.Current is not { } app) return;
-        app.RequestedThemeVariant = motyw switch
-        {
-            Motyw.Jasny => ThemeVariant.Light,
-            Motyw.Ciemny => ThemeVariant.Dark,
-            _ => ThemeVariant.Default,
-        };
-    }
-
-    public static bool CiemnyAktywny => Application.Current?.ActualThemeVariant == ThemeVariant.Dark;
 }

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -14,6 +15,12 @@ namespace Wycenka.App.Tests;
 
 public class MotywTests
 {
+    private static void UsunKatalog(string plik)
+    {
+        var d = Path.GetDirectoryName(plik)!;
+        if (Directory.Exists(d)) Directory.Delete(d, recursive: true);
+    }
+
     private static string TymczasowePlikUstawien() =>
         Path.Combine(Path.GetTempPath(), $"wycenka-ustawienia-{Guid.NewGuid()}", "ustawienia.json");
 
@@ -34,7 +41,7 @@ public class MotywTests
         }
         finally
         {
-            Directory.Delete(Path.GetDirectoryName(plik)!, recursive: true);
+            UsunKatalog(plik);
         }
     }
 
@@ -50,7 +57,7 @@ public class MotywTests
         }
         finally
         {
-            Directory.Delete(Path.GetDirectoryName(plik)!, recursive: true);
+            UsunKatalog(plik);
         }
     }
 
@@ -83,18 +90,85 @@ public class MotywTests
         finally
         {
             MotywAplikacji.Zastosuj(Motyw.Systemowy);
-            Directory.Delete(Path.GetDirectoryName(plik)!, recursive: true);
+            UsunKatalog(plik);
         }
     }
 
-    /// <summary>Zrzuty wszystkich zakładek w ciemnym motywie (do przeglądu wyglądu).</summary>
+    /// <summary>Kolor piksela z wyrenderowanego okna (tak, jak widzi go użytkownik).</summary>
+    private static Color Piksel(Window okno, int x, int y)
+    {
+        Dispatcher.UIThread.RunJobs();
+        var klatka = okno.CaptureRenderedFrame()!;
+        using var fb = klatka.Lock();
+        var b = new byte[4];
+        System.Runtime.InteropServices.Marshal.Copy(fb.Address + y * fb.RowBytes + x * 4, b, 0, 4);
+        return fb.Format == Avalonia.Platform.PixelFormat.Rgba8888
+            ? Color.FromArgb(b[3], b[0], b[1], b[2])
+            : Color.FromArgb(b[3], b[2], b[1], b[0]);
+    }
+
+    // Puste miejsce na liście działów (panel w kolorze ChromeMediumLow).
+    private static Color KolorPaneli(Window okno) => Piksel(okno, 100, 400);
+
     [AvaloniaFact]
-    public async Task Zrzuty_ekranu_w_ciemnym_motywie()
+    public void Motyw_brazowy_zmienia_kolory_i_jest_zapamietany_dla_przycisku()
     {
         var plik = TymczasowePlikUstawien();
         try
         {
-            var vm = new MainViewModel(UstawieniaAplikacji.Wczytaj(plik)) { Motyw = Motyw.Ciemny };
+            var vm = new MainViewModel(UstawieniaAplikacji.Wczytaj(plik));
+            var okno = new MainWindow { DataContext = vm };
+            okno.WindowState = WindowState.Normal;
+            okno.Width = 900;
+            okno.Height = 600;
+            okno.Show();
+            Assert.Equal("Ciemny", vm.NazwaCiemnego);
+
+            vm.MotywCiemny = true;
+            var paneleCiemne = KolorPaneli(okno);
+
+            vm.MotywBrazowy = true;
+            Assert.Equal(MotywAplikacji.Brazowy, Application.Current!.ActualThemeVariant);
+            Assert.True(vm.CiemnyAktywny);
+            Assert.Equal(Color.Parse("#FF3A2C24"), KolorPaneli(okno));
+
+            // Przycisk: z brązowego na jasny i z powrotem na brązowy (zapamiętany).
+            vm.PrzelaczMotywCommand.Execute(null);
+            Assert.Equal(Motyw.Jasny, vm.Motyw);
+            Assert.False(vm.CiemnyAktywny);
+            Assert.Equal("Brązowy", vm.NazwaCiemnego);
+            vm.PrzelaczMotywCommand.Execute(null);
+            Assert.Equal(Motyw.Brazowy, vm.Motyw);
+
+            var u = UstawieniaAplikacji.Wczytaj(plik);
+            Assert.Equal(Motyw.Brazowy, u.Motyw);
+            Assert.Equal(Motyw.Brazowy, u.OstatniCiemny);
+
+            // Powrót na zwykły ciemny przywraca jego kolory.
+            vm.MotywCiemny = true;
+            Assert.Equal(ThemeVariant.Dark, Application.Current.ActualThemeVariant);
+            Assert.Equal(paneleCiemne, KolorPaneli(okno));
+            Assert.NotEqual(Color.Parse("#FF3A2C24"), paneleCiemne);
+            Assert.Equal("Ciemny", vm.NazwaCiemnego);
+            okno.Close();
+        }
+        finally
+        {
+            MotywAplikacji.Zastosuj(Motyw.Systemowy);
+            UsunKatalog(plik);
+        }
+    }
+
+    /// <summary>Zrzuty wszystkich zakładek w ciemnych motywach (do przeglądu wyglądu).</summary>
+    [AvaloniaTheory]
+    [InlineData(Motyw.Ciemny, "ciemny")]
+    [InlineData(Motyw.Brazowy, "brazowy")]
+    public async Task Zrzuty_ekranu_w_ciemnych_motywach(Motyw motyw, string prefiks)
+    {
+        var plik = TymczasowePlikUstawien();
+        try
+        {
+            var vm = new MainViewModel(UstawieniaAplikacji.Wczytaj(plik)) { Motyw = motyw };
             await vm.OtworzPlikAsync(Sciezki.Przyklad());
             vm.WybranyDzial = vm.Kosztorys.Dzialy[2];
 
@@ -117,14 +191,48 @@ public class MotywTests
                 Dispatcher.UIThread.RunJobs();
                 var klatka = okno.CaptureRenderedFrame();
                 Assert.NotNull(klatka);
-                klatka!.Save(Path.Combine(katalog, $"ciemny-{i + 1}-{nazwy[i]}.png"), new PngBitmapEncoderOptions());
+                klatka!.Save(Path.Combine(katalog, $"{prefiks}-{i + 1}-{nazwy[i]}.png"), new PngBitmapEncoderOptions());
             }
             okno.Close();
         }
         finally
         {
             MotywAplikacji.Zastosuj(Motyw.Systemowy);
-            Directory.Delete(Path.GetDirectoryName(plik)!, recursive: true);
+            UsunKatalog(plik);
+        }
+    }
+
+    /// <summary>Przełączanie motywu przy otwartym oknie – zrzut po każdym kroku.</summary>
+    [AvaloniaFact]
+    public void Przelaczanie_motywu_na_zywo_zrzuty()
+    {
+        var plik = TymczasowePlikUstawien();
+        try
+        {
+            var vm = new MainViewModel(UstawieniaAplikacji.Wczytaj(plik)) { Motyw = Motyw.Ciemny };
+            var okno = new MainWindow { DataContext = vm };
+            okno.WindowState = WindowState.Normal;
+            okno.Width = 900;
+            okno.Height = 500;
+            okno.Show();
+
+            var katalog = Environment.GetEnvironmentVariable("WYCENKA_ZRZUTY")
+                          ?? Path.Combine(AppContext.BaseDirectory, "zrzuty");
+            Directory.CreateDirectory(katalog);
+
+            Motyw[] kroki = [Motyw.Ciemny, Motyw.Brazowy, Motyw.Ciemny, Motyw.Jasny, Motyw.Brazowy];
+            for (var i = 0; i < kroki.Length; i++)
+            {
+                vm.Motyw = kroki[i];
+                    okno.CaptureRenderedFrame()!.Save(Path.Combine(katalog, $"na-zywo-{i + 1}-{kroki[i]}.png"),
+                    new PngBitmapEncoderOptions());
+            }
+            okno.Close();
+        }
+        finally
+        {
+            MotywAplikacji.Zastosuj(Motyw.Systemowy);
+            UsunKatalog(plik);
         }
     }
 }
