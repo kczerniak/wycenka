@@ -8,9 +8,11 @@ Program do sporządzania kosztorysów budowlanych na Windows. Jeden plik `Wycenk
 - **Narzuty** – stawka roboczogodziny, koszty pośrednie (Kp od R+S), koszty zakupu (Kz od M), zysk (Z od R+S+Kp), VAT.
 - **Przeliczanie na żywo** – wartości pozycji, działów, zestawienie kosztów i kwota słownie.
 - **Kalkulator w komórkach** – w polach liczbowych można wpisać obmiar, np. `4*2,5+3`. Działa przecinek i kropka.
-- **Eksport do PDF i Excela (.xlsx)**.
+- **Wygodna edycja opisów** – długi opis widać w całości, Enter w opisie robi nową linię (zatwierdzenie: Tab lub kliknięcie obok), strzałki nie wyrzucają z edytowanej komórki.
+- **Podpowiedzi** – w polach Podstawa, Opis i j.m. po wpisaniu pierwszych liter pojawiają się wcześniej użyte wartości (także z poprzednich kosztorysów) i typowe jednostki.
+- **Eksport do PDF i Excela (.xlsx)** – zestawienie kosztów bez wierszy o wartości 0,00 zł; bez VAT kończy się „Wartością całościową”.
 - **Zapis do pliku `.wycenka`** (JSON), ostrzeżenie o niezapisanych zmianach.
-- **Motywy: jasny, ciemny i brązowy** – domyślnie jak w Windowsie; przełącznik na pasku narzędzi (Ctrl+T, wraca do ostatnio wybranego ciemnego) i menu Widok → Motyw. Wybór jest zapamiętywany.
+- **Motywy: jasny, ciemny i brązowy** – domyślnie jak w Windowsie; wybór z listy pod przyciskiem „Motyw” na pasku narzędzi lub w menu Widok → Motyw, Ctrl+T szybko przełącza jasny ↔ ciemny. Wybór jest zapamiętywany.
 
 Przykładowy kosztorys: [`przyklady/Remont łazienki.wycenka`](przyklady/).
 
