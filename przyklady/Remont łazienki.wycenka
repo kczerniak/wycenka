@@ -1,0 +1,123 @@
+{
+  "WersjaPliku": 1,
+  "Nazwa": "Remont łazienki – ul. Źródlana 7",
+  "Obiekt": "Łazienka 6 m², mieszkanie nr 12",
+  "Adres": "ul. Źródlana 7/12, 30-001 Kraków",
+  "Inwestor": "Jan Kowalski",
+  "Wykonawca": "Usługi Remontowo-Budowlane „Żuraw”",
+  "Sporzadzil": "Kacper",
+  "DataOpracowania": "2026-11-21T00:00:00+01:00",
+  "Uwagi": "Ceny materiałów wg cennika hurtowni z listopada 2026 r. VAT 8% – budownictwo mieszkaniowe.",
+  "StawkaRg": 45,
+  "ProcentKp": 65,
+  "ProcentKz": 5,
+  "ProcentZ": 12,
+  "ProcentVat": 8,
+  "Dzialy": [
+    {
+      "Nazwa": "Roboty rozbiórkowe",
+      "Pozycje": [
+        {
+          "Podstawa": "KNR 4-01 0812-07",
+          "Opis": "Skucie płytek ceramicznych ze ścian",
+          "Jm": "m2",
+          "Ilosc": 18.4,
+          "NakladRg": 0.65,
+          "CenaM": 0,
+          "CenaS": 1.2
+        },
+        {
+          "Podstawa": "KNR 4-01 0811-02",
+          "Opis": "Rozebranie posadzki z płytek ceramicznych",
+          "Jm": "m2",
+          "Ilosc": 6.0,
+          "NakladRg": 0.72,
+          "CenaM": 0,
+          "CenaS": 1.2
+        },
+        {
+          "Podstawa": "kalk. własna",
+          "Opis": "Wywóz gruzu kontenerem 4 m³ wraz z utylizacją",
+          "Jm": "kpl",
+          "Ilosc": 1,
+          "NakladRg": 0,
+          "CenaM": 0,
+          "CenaS": 650
+        }
+      ]
+    },
+    {
+      "Nazwa": "Instalacje sanitarne",
+      "Pozycje": [
+        {
+          "Podstawa": "KNR 2-15 0105-02",
+          "Opis": "Rurociągi z PP-R łączone zgrzewaniem, śr. 20 mm",
+          "Jm": "m",
+          "Ilosc": 14,
+          "NakladRg": 0.48,
+          "CenaM": 12.4,
+          "CenaS": 0.35
+        },
+        {
+          "Podstawa": "KNR 2-15 0230-01",
+          "Opis": "Montaż miski ustępowej podwieszanej ze stelażem",
+          "Jm": "kpl",
+          "Ilosc": 1,
+          "NakladRg": 4.2,
+          "CenaM": 1890,
+          "CenaS": 0
+        },
+        {
+          "Podstawa": "KNR 2-15 0221-01",
+          "Opis": "Odpływ liniowy w posadzce, dł. 80 cm",
+          "Jm": "szt",
+          "Ilosc": 1,
+          "NakladRg": 3.1,
+          "CenaM": 720,
+          "CenaS": 0
+        }
+      ]
+    },
+    {
+      "Nazwa": "Okładziny ścian i posadzek",
+      "Pozycje": [
+        {
+          "Podstawa": "KNR 2-02 1118-01",
+          "Opis": "Hydroizolacja podpłytkowa – folia w płynie, dwie warstwy",
+          "Jm": "m2",
+          "Ilosc": 14.5,
+          "NakladRg": 0.22,
+          "CenaM": 18.9,
+          "CenaS": 0
+        },
+        {
+          "Podstawa": "KNR 2-02 0829-03",
+          "Opis": "Licowanie ścian płytkami gres 60×120 cm na klej",
+          "Jm": "m2",
+          "Ilosc": 18.4,
+          "NakladRg": 1.55,
+          "CenaM": 142,
+          "CenaS": 2.1
+        },
+        {
+          "Podstawa": "KNR 2-02 1118-07",
+          "Opis": "Posadzka z płytek gres 60×60 cm, spadek do odpływu",
+          "Jm": "m2",
+          "Ilosc": 6.0,
+          "NakladRg": 1.35,
+          "CenaM": 118,
+          "CenaS": 2.1
+        },
+        {
+          "Podstawa": "kalk. własna",
+          "Opis": "Fugowanie fugą epoksydową",
+          "Jm": "m2",
+          "Ilosc": 24.4,
+          "NakladRg": 0.18,
+          "CenaM": 21.5,
+          "CenaS": 0
+        }
+      ]
+    }
+  ]
+}

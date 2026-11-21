@@ -1,0 +1,20 @@
+<Project>
+  <!--
+    QuestPDF (od 2026.9) kopiuje archiwum czcionek Lato obok programu.
+    My wbudowujemy potrzebne kroje Lato w Wycenka.Core jako zasoby, więc
+    archiwum jest zbędne – dzięki temu publikacja to naprawdę jeden plik .exe.
+  -->
+  <Target Name="WycenkaBezArchiwumCzcionek" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <None Remove="@(None)" Condition="'%(Filename)' == 'questpdf_fonts_lato'" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Bez plików .pdb (także natywnych z SkiaSharp/HarfBuzz) w katalogu publikacji. -->
+  <Target Name="WycenkaBezPdbWPublikacji" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <_WycenkaPdb Include="@(ResolvedFileToPublish)" Condition="'%(Extension)' == '.pdb'" />
+      <ResolvedFileToPublish Remove="@(_WycenkaPdb)" />
+    </ItemGroup>
+  </Target>
+</Project>

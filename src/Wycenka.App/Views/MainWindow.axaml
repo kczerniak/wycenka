@@ -1,0 +1,392 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Wycenka.App.ViewModels"
+        xmlns:m="using:Wycenka.Core.Model"
+        xmlns:c="using:Wycenka.App.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
+        x:Class="Wycenka.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Icon="/Assets/wycenka.ico"
+        Title="{Binding Tytul}"
+        Width="1280" Height="800" MinWidth="960" MinHeight="600"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized">
+
+    <Design.DataContext>
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding NowyCommand}" />
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding OtworzCommand}" />
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding ZapiszCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding ZapiszJakoCommand}" />
+        <KeyBinding Gesture="Ctrl+P" Command="{Binding EksportPdfCommand}" />
+        <KeyBinding Gesture="Ctrl+E" Command="{Binding EksportExcelCommand}" />
+    </Window.KeyBindings>
+
+    <Window.Styles>
+        <Style Selector="Border.pasek">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+            <Setter Property="Padding" Value="8,6" />
+        </Style>
+        <Style Selector="Border.karta">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="16" />
+        </Style>
+        <Style Selector="TextBlock.naglowek">
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style Selector="TextBlock.etykieta">
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="0,0,12,0" />
+        </Style>
+        <Style Selector="Grid.formularz > :is(Control)">
+            <Setter Property="Margin" Value="0,4" />
+        </Style>
+        <Style Selector="TextBlock.kwota">
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="FontFeatures" Value="+tnum" />
+        </Style>
+        <Style Selector="DataGridCell.liczba">
+            <Setter Property="HorizontalContentAlignment" Value="Right" />
+        </Style>
+        <Style Selector="DataGridCell.liczba TextBox">
+            <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+        <Style Selector="DataGridCell.wyliczona">
+            <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumHighBrush}" />
+        </Style>
+    </Window.Styles>
+
+    <DockPanel>
+        <!-- Menu -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Plik">
+                <MenuItem Header="_Nowy" Command="{Binding NowyCommand}" InputGesture="Ctrl+N" />
+                <MenuItem Header="_Otwórz…" Command="{Binding OtworzCommand}" InputGesture="Ctrl+O" />
+                <MenuItem Header="_Zapisz" Command="{Binding ZapiszCommand}" InputGesture="Ctrl+S" />
+                <MenuItem Header="Zapisz _jako…" Command="{Binding ZapiszJakoCommand}" InputGesture="Ctrl+Shift+S" />
+                <Separator />
+                <MenuItem Header="Eksport do _PDF…" Command="{Binding EksportPdfCommand}" InputGesture="Ctrl+P" />
+                <MenuItem Header="Eksport do _Excela…" Command="{Binding EksportExcelCommand}" InputGesture="Ctrl+E" />
+                <Separator />
+                <MenuItem Header="Za_kończ" Click="Zakoncz_Click" />
+            </MenuItem>
+            <MenuItem Header="_Edycja">
+                <MenuItem Header="Dodaj _dział" Command="{Binding DodajDzialCommand}" />
+                <MenuItem Header="Usuń dział" Command="{Binding UsunDzialCommand}" />
+                <Separator />
+                <MenuItem Header="Dodaj _pozycję" Command="{Binding DodajPozycjeCommand}" />
+                <MenuItem Header="Duplikuj pozycję" Command="{Binding DuplikujPozycjeCommand}" />
+                <MenuItem Header="Usuń pozycję" Command="{Binding UsunPozycjeCommand}" />
+            </MenuItem>
+            <MenuItem Header="Po_moc">
+                <MenuItem Header="_O programie" Command="{Binding OProgramieCommand}" />
+            </MenuItem>
+        </Menu>
+
+        <!-- Pasek narzędzi -->
+        <Border DockPanel.Dock="Top" Classes="pasek" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button Content="Nowy" Command="{Binding NowyCommand}" ToolTip.Tip="Nowy kosztorys (Ctrl+N)" />
+                <Button Content="Otwórz" Command="{Binding OtworzCommand}" ToolTip.Tip="Otwórz kosztorys (Ctrl+O)" />
+                <Button Content="Zapisz" Command="{Binding ZapiszCommand}" ToolTip.Tip="Zapisz (Ctrl+S)" />
+                <Rectangle Width="1" Margin="6,2" Fill="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+                <Button Content="Eksport PDF" Command="{Binding EksportPdfCommand}" ToolTip.Tip="Eksport do PDF (Ctrl+P)" />
+                <Button Content="Eksport Excel" Command="{Binding EksportExcelCommand}" ToolTip.Tip="Eksport do Excela (Ctrl+E)" />
+            </StackPanel>
+        </Border>
+
+        <!-- Pasek stanu z sumami -->
+        <Border DockPanel.Dock="Bottom" Classes="pasek" BorderThickness="0,1,0,0">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                           Opacity="0.8" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
+                    <TextBlock>
+                        <Run Text="Netto:" />
+                        <Run FontWeight="SemiBold"
+                             Text="{Binding Podsumowanie.Netto, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                        <Run Text="zł" />
+                    </TextBlock>
+                    <TextBlock>
+                        <Run Text="VAT:" />
+                        <Run FontWeight="SemiBold"
+                             Text="{Binding Podsumowanie.Vat, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                        <Run Text="zł" />
+                    </TextBlock>
+                    <TextBlock>
+                        <Run Text="Brutto:" />
+                        <Run FontWeight="Bold"
+                             Text="{Binding Podsumowanie.Brutto, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                        <Run Text="zł" />
+                    </TextBlock>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <TabControl Padding="0" Margin="8,4,8,0">
+
+            <!-- ======================= POZYCJE ======================= -->
+            <TabItem Header="Pozycje">
+                <Grid ColumnDefinitions="260,6,*" Margin="0,8,0,8">
+
+                    <!-- Działy -->
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Top" Classes="naglowek" Text="Działy" />
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="4" Margin="0,8,0,0">
+                            <Button Content="+ Dział" Command="{Binding DodajDzialCommand}" />
+                            <Button Content="Usuń" Command="{Binding UsunDzialCommand}" />
+                            <Button Content="↑" Command="{Binding DzialWGoreCommand}" ToolTip.Tip="Przesuń w górę" />
+                            <Button Content="↓" Command="{Binding DzialWDolCommand}" ToolTip.Tip="Przesuń w dół" />
+                        </StackPanel>
+                        <TextBox DockPanel.Dock="Bottom" Margin="0,8,0,0" PlaceholderText="Nazwa działu"
+                                 IsEnabled="{Binding WybranyDzial, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                 Text="{Binding WybranyDzial.Nazwa, FallbackValue=''}" />
+                        <ListBox ItemsSource="{Binding Kosztorys.Dzialy}"
+                                 SelectedItem="{Binding WybranyDzial}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="m:Dzial">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <TextBlock Text="{Binding Numer, StringFormat='{}{0}.'}" Margin="0,0,6,0" />
+                                        <TextBlock Grid.Column="1" Text="{Binding Nazwa}" TextTrimming="CharacterEllipsis" />
+                                        <TextBlock Grid.Column="2" Classes="kwota" Margin="8,0,0,0" Opacity="0.75"
+                                                   Text="{Binding Wartosc, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+
+                    <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="Transparent" />
+
+                    <!-- Pozycje działu -->
+                    <DockPanel Grid.Column="2"
+                               IsEnabled="{Binding WybranyDzial, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto">
+                            <TextBlock Classes="naglowek" TextTrimming="CharacterEllipsis"
+                                       Text="{Binding WybranyDzial.Nazwa, FallbackValue='Brak działów – dodaj dział'}" />
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" Margin="0,0,0,8">
+                                <Button Classes="accent" Content="+ Pozycja" Command="{Binding DodajPozycjeCommand}" />
+                                <Button Content="Duplikuj" Command="{Binding DuplikujPozycjeCommand}" />
+                                <Button Content="Usuń" Command="{Binding UsunPozycjeCommand}" />
+                                <Button Content="↑" Command="{Binding PozycjaWGoreCommand}" ToolTip.Tip="Przesuń w górę" />
+                                <Button Content="↓" Command="{Binding PozycjaWDolCommand}" ToolTip.Tip="Przesuń w dół" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Border DockPanel.Dock="Bottom" Classes="karta" Padding="12,8" Margin="0,8,0,0">
+                            <StackPanel Orientation="Horizontal" Spacing="24" HorizontalAlignment="Right">
+                                <TextBlock>
+                                    <Run Text="R:" />
+                                    <Run Text="{Binding WybranyDzial.WartoscR, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2, FallbackValue=0}" />
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="M:" />
+                                    <Run Text="{Binding WybranyDzial.WartoscM, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2, FallbackValue=0}" />
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="S:" />
+                                    <Run Text="{Binding WybranyDzial.WartoscS, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2, FallbackValue=0}" />
+                                </TextBlock>
+                                <TextBlock FontWeight="SemiBold">
+                                    <Run Text="Razem dział (koszty bezpośrednie):" />
+                                    <Run Text="{Binding WybranyDzial.Wartosc, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2, FallbackValue=0}" />
+                                    <Run Text="zł" />
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <DataGrid x:Name="SiatkaPozycji"
+                                  ItemsSource="{Binding WybranyDzial.Pozycje}"
+                                  SelectedItem="{Binding WybranaPozycja}"
+                                  AutoGenerateColumns="False"
+                                  CanUserSortColumns="False"
+                                  CanUserReorderColumns="False"
+                                  GridLinesVisibility="All"
+                                  SelectionMode="Single"
+                                  BorderThickness="1"
+                                  BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Lp." Width="62" IsReadOnly="True"
+                                                    Binding="{Binding Lp}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Podstawa" Width="168"
+                                                    Binding="{Binding Podstawa}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Opis robót" Width="*" MinWidth="180"
+                                                    Binding="{Binding Opis}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="j.m." Width="66"
+                                                    Binding="{Binding Jm}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Ilość" Width="80" CellStyleClasses="liczba"
+                                                    Binding="{Binding Ilosc, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.###}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="r-g/j.m." Width="88" CellStyleClasses="liczba"
+                                                    Binding="{Binding NakladRg, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.####}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="M zł/j.m." Width="96" CellStyleClasses="liczba"
+                                                    Binding="{Binding CenaM, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.00}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="S zł/j.m." Width="96" CellStyleClasses="liczba"
+                                                    Binding="{Binding CenaS, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.00}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Cena jedn." Width="108" IsReadOnly="True"
+                                                    CellStyleClasses="liczba wyliczona"
+                                                    Binding="{Binding CenaJednostkowa, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Wartość zł" Width="110" IsReadOnly="True"
+                                                    CellStyleClasses="liczba wyliczona"
+                                                    Binding="{Binding Wartosc, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </DockPanel>
+                </Grid>
+            </TabItem>
+
+            <!-- ======================= DANE OGÓLNE ======================= -->
+            <TabItem Header="Dane ogólne">
+                <ScrollViewer>
+                    <WrapPanel Margin="0,8" ItemSpacing="16" LineSpacing="16">
+                        <Border Classes="karta" Width="560">
+                            <StackPanel>
+                                <TextBlock Classes="naglowek" Text="Dane kosztorysu" />
+                                <Grid Classes="formularz" ColumnDefinitions="140,*"
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                    <TextBlock Classes="etykieta" Text="Nazwa" />
+                                    <TextBox Grid.Column="1" Text="{Binding Kosztorys.Nazwa}" />
+                                    <TextBlock Grid.Row="1" Classes="etykieta" Text="Obiekt" />
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Kosztorys.Obiekt}" />
+                                    <TextBlock Grid.Row="2" Classes="etykieta" Text="Adres" />
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Kosztorys.Adres}" />
+                                    <TextBlock Grid.Row="3" Classes="etykieta" Text="Inwestor" />
+                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Kosztorys.Inwestor}" />
+                                    <TextBlock Grid.Row="4" Classes="etykieta" Text="Wykonawca" />
+                                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Kosztorys.Wykonawca}" />
+                                    <TextBlock Grid.Row="5" Classes="etykieta" Text="Sporządził" />
+                                    <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Kosztorys.Sporzadzil}" />
+                                    <TextBlock Grid.Row="6" Classes="etykieta" Text="Data opracowania" />
+                                    <CalendarDatePicker Grid.Row="6" Grid.Column="1" HorizontalAlignment="Left"
+                                                        SelectedDate="{Binding Kosztorys.DataOpracowania}" />
+                                    <TextBlock Grid.Row="7" Classes="etykieta" Text="Uwagi" VerticalAlignment="Top"
+                                               Margin="0,10,12,0" />
+                                    <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding Kosztorys.Uwagi}"
+                                             AcceptsReturn="True" TextWrapping="Wrap" MinHeight="80" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="karta" Width="420">
+                            <StackPanel>
+                                <TextBlock Classes="naglowek" Text="Stawki i narzuty" />
+                                <Grid Classes="formularz" ColumnDefinitions="*,150"
+                                      RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                    <TextBlock Classes="etykieta" Text="Stawka roboczogodziny [zł/r-g]" />
+                                    <NumericUpDown Grid.Column="1" Minimum="0" Increment="1" FormatString="0.00"
+                                                   Value="{Binding Kosztorys.StawkaRg}" />
+                                    <TextBlock Grid.Row="1" Classes="etykieta" Text="Koszty pośrednie Kp [% R+S]" />
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Minimum="0" Increment="1" FormatString="0.##"
+                                                   Value="{Binding Kosztorys.ProcentKp}" />
+                                    <TextBlock Grid.Row="2" Classes="etykieta" Text="Koszty zakupu Kz [% M]" />
+                                    <NumericUpDown Grid.Row="2" Grid.Column="1" Minimum="0" Increment="1" FormatString="0.##"
+                                                   Value="{Binding Kosztorys.ProcentKz}" />
+                                    <TextBlock Grid.Row="3" Classes="etykieta" Text="Zysk Z [% R+S+Kp]" />
+                                    <NumericUpDown Grid.Row="3" Grid.Column="1" Minimum="0" Increment="1" FormatString="0.##"
+                                                   Value="{Binding Kosztorys.ProcentZ}" />
+                                    <TextBlock Grid.Row="4" Classes="etykieta" Text="VAT [%]" />
+                                    <NumericUpDown Grid.Row="4" Grid.Column="1" Minimum="0" Maximum="100" Increment="1"
+                                                   FormatString="0.##"
+                                                   Value="{Binding Kosztorys.ProcentVat}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ======================= PODSUMOWANIE ======================= -->
+            <TabItem Header="Podsumowanie">
+                <ScrollViewer>
+                    <WrapPanel Margin="0,8" ItemSpacing="16" LineSpacing="16">
+                        <Border Classes="karta" Width="520">
+                            <StackPanel>
+                                <TextBlock Classes="naglowek" Text="Zestawienie kosztów" />
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                                      Classes="formularz">
+                                    <TextBlock Text="Robocizna (R)" />
+                                    <TextBlock Grid.Column="1" Classes="kwota"
+                                               Text="{Binding Podsumowanie.R, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="1" Text="Materiały (M)" />
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="kwota"
+                                               Text="{Binding Podsumowanie.M, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="2" Text="Sprzęt (S)" />
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Classes="kwota"
+                                               Text="{Binding Podsumowanie.S, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="3" Text="Razem koszty bezpośrednie" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Classes="kwota" FontWeight="SemiBold"
+                                               Text="{Binding Podsumowanie.Bezposrednie, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="4">
+                                        <Run Text="Koszty pośrednie (Kp)" />
+                                        <Run Text="{Binding Kosztorys.ProcentKp, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.##}" />
+                                        <Run Text="% od R+S" />
+                                    </TextBlock>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Classes="kwota"
+                                               Text="{Binding Podsumowanie.Kp, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="5">
+                                        <Run Text="Koszty zakupu (Kz)" />
+                                        <Run Text="{Binding Kosztorys.ProcentKz, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.##}" />
+                                        <Run Text="% od M" />
+                                    </TextBlock>
+                                    <TextBlock Grid.Row="5" Grid.Column="1" Classes="kwota"
+                                               Text="{Binding Podsumowanie.Kz, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="6">
+                                        <Run Text="Zysk (Z)" />
+                                        <Run Text="{Binding Kosztorys.ProcentZ, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.##}" />
+                                        <Run Text="% od R+S+Kp" />
+                                    </TextBlock>
+                                    <TextBlock Grid.Row="6" Grid.Column="1" Classes="kwota"
+                                               Text="{Binding Podsumowanie.Z, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="7" Text="Wartość netto" FontWeight="SemiBold" />
+                                    <TextBlock Grid.Row="7" Grid.Column="1" Classes="kwota" FontWeight="SemiBold"
+                                               Text="{Binding Podsumowanie.Netto, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="8">
+                                        <Run Text="VAT" />
+                                        <Run Text="{Binding Kosztorys.ProcentVat, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.##}" />
+                                        <Run Text="%" />
+                                    </TextBlock>
+                                    <TextBlock Grid.Row="8" Grid.Column="1" Classes="kwota"
+                                               Text="{Binding Podsumowanie.Vat, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                    <TextBlock Grid.Row="9" Text="Wartość brutto" FontWeight="Bold" FontSize="16" />
+                                    <TextBlock Grid.Row="9" Grid.Column="1" Classes="kwota" FontWeight="Bold" FontSize="16"
+                                               Text="{Binding Podsumowanie.Brutto, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                </Grid>
+                                <SelectableTextBlock Margin="0,12,0,0" FontStyle="Italic" TextWrapping="Wrap">
+                                    <Run Text="Słownie:" />
+                                    <Run Text="{Binding Slownie}" />
+                                </SelectableTextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="karta" Width="460">
+                            <StackPanel>
+                                <TextBlock Classes="naglowek" Text="Działy" />
+                                <ItemsControl ItemsSource="{Binding Kosztorys.Dzialy}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="m:Dzial">
+                                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4">
+                                                <TextBlock Text="{Binding Numer, StringFormat='{}{0}.'}" Margin="0,0,6,0" />
+                                                <TextBlock Grid.Column="1" Text="{Binding Nazwa}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="2" Classes="kwota" Margin="12,0,0,0"
+                                                           Text="{Binding Wartosc, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=N2}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Margin="0,8,0,0" Opacity="0.7" TextWrapping="Wrap" FontSize="12"
+                                           Text="Wartości działów to koszty bezpośrednie (R+M+S), bez narzutów i VAT." />
+                            </StackPanel>
+                        </Border>
+                    </WrapPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
