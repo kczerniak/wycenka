@@ -100,7 +100,7 @@ public class MainViewModelTests
         Assert.False(vm.Zmieniony);
         Assert.Equal(3, vm.Kosztorys.Dzialy.Count);
         Assert.Equal(15987.08m, vm.Podsumowanie.Brutto);
-        Assert.EndsWith(".wycenka – Wycenka", vm.Tytul);
+        Assert.Contains(".wycenka – Wycenka", vm.Tytul);
     }
 }
 

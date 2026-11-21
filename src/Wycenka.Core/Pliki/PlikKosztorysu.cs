@@ -18,13 +18,25 @@ public static class PlikKosztorysu
 
     public static void Zapisz(Kosztorys k, string sciezka)
     {
+        if (File.Exists(sciezka) && new FileInfo(sciezka).IsReadOnly)
+            throw new PlikTylkoDoOdczytuException(sciezka);
+
         k.WersjaPliku = Kosztorys.AktualnaWersjaPliku;
         var tmp = sciezka + ".tmp";
-        using (var fs = File.Create(tmp))
+        try
         {
-            JsonSerializer.Serialize(fs, k, Opcje);
+            using (var fs = File.Create(tmp))
+            {
+                JsonSerializer.Serialize(fs, k, Opcje);
+            }
+            File.Move(tmp, sciezka, overwrite: true);
         }
-        File.Move(tmp, sciezka, overwrite: true);
+        catch
+        {
+            // Nie zostawiaj po sobie pliku tymczasowego.
+            try { File.Delete(tmp); } catch { /* trudno */ }
+            throw;
+        }
     }
 
     public static Kosztorys Wczytaj(string sciezka)
@@ -36,4 +48,11 @@ public static class PlikKosztorysu
             throw new InvalidDataException("Plik pochodzi z nowszej wersji programu Wycenka.");
         return k;
     }
+}
+
+/// <summary>Plik docelowy ma atrybut „tylko do odczytu” – trzeba zapisać pod inną nazwą.</summary>
+public sealed class PlikTylkoDoOdczytuException(string sciezka)
+    : IOException($"Plik „{Path.GetFileName(sciezka)}” jest tylko do odczytu.")
+{
+    public string Sciezka { get; } = sciezka;
 }

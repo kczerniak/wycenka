@@ -61,12 +61,26 @@ public partial class MainViewModel : ViewModelBase
     public string Tytul =>
         (Zmieniony ? "● " : "") +
         (SciezkaPliku is null ? Kosztorys.Nazwa : Path.GetFileName(SciezkaPliku)) +
-        " – Wycenka";
+        " – Wycenka" +
+        (WersjaTestowa ? $" (wersja testowa {Wersja})" : "");
 
     public string Slownie => KwotaSlownie.Kwota(Podsumowanie.Brutto);
 
-    public string Wersja =>
-        typeof(MainViewModel).Assembly.GetName().Version?.ToString(3) ?? "";
+    /// <summary>Wersja programu, np. „0.2.0” albo „0.2.0-test.brazowy” (bez skrótu commita).</summary>
+    public static string Wersja { get; } = OdczytajWersje();
+
+    /// <summary>Wersje z dopiskiem po myślniku (np. „-test.brazowy”) to wersje testowe.</summary>
+    public static bool WersjaTestowa => Wersja.Contains('-');
+
+    private static string OdczytajWersje()
+    {
+        var asm = typeof(MainViewModel).Assembly;
+        var info = (System.Reflection.AssemblyInformationalVersionAttribute?)Attribute.GetCustomAttribute(
+            asm, typeof(System.Reflection.AssemblyInformationalVersionAttribute));
+        var wersja = info?.InformationalVersion ?? asm.GetName().Version?.ToString(3) ?? "";
+        var plus = wersja.IndexOf('+');
+        return plus >= 0 ? wersja[..plus] : wersja;
+    }
 
     partial void OnWybranyDzialChanged(Dzial? value)
     {
@@ -169,6 +183,23 @@ public partial class MainViewModel : ViewModelBase
             Zmieniony = false;
             Status = $"Zapisano {sciezka}";
             return true;
+        }
+        catch (PlikTylkoDoOdczytuException)
+        {
+            Status = "Plik tylko do odczytu – zapisz pod inną nazwą";
+            if (Dialogi is null) return false;
+            await Dialogi.KomunikatAsync("Plik tylko do odczytu",
+                $"Plik „{Path.GetFileName(sciezka)}” jest tylko do odczytu, więc nie można go nadpisać.\n\n" +
+                "Wybierz nazwę lub miejsce, pod którą zapisać kosztorys.");
+            return await ZapiszJakoAsync();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Status = "Brak uprawnień do zapisu";
+            if (Dialogi is null) return false;
+            await Dialogi.KomunikatAsync("Brak uprawnień",
+                $"Brak uprawnień do zapisu w tym miejscu:\n{sciezka}\n\nWybierz inny folder, np. Dokumenty.");
+            return await ZapiszJakoAsync();
         }
         catch (Exception ex)
         {

@@ -104,6 +104,50 @@ public class KalkulatorTests
     }
 
     [Fact]
+    public void Zapis_do_pliku_tylko_do_odczytu_rzuca_wyjatek_i_nie_zostawia_tmp()
+    {
+        var dir = Directory.CreateTempSubdirectory("wycenka-ro");
+        var sciezka = Path.Combine(dir.FullName, "k.wycenka");
+        try
+        {
+            PlikKosztorysu.Zapisz(Przyklad(), sciezka);
+            var przed = File.ReadAllText(sciezka);
+            File.SetAttributes(sciezka, FileAttributes.ReadOnly);
+
+            var k = Przyklad();
+            k.Nazwa = "Zmieniona nazwa";
+            var ex = Assert.Throws<PlikTylkoDoOdczytuException>(() => PlikKosztorysu.Zapisz(k, sciezka));
+            Assert.Equal(sciezka, ex.Sciezka);
+            Assert.Contains("tylko do odczytu", ex.Message);
+            Assert.Equal(przed, File.ReadAllText(sciezka));
+            Assert.False(File.Exists(sciezka + ".tmp"));
+        }
+        finally
+        {
+            File.SetAttributes(sciezka, FileAttributes.Normal);
+            dir.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Nieudany_zapis_sprzata_plik_tymczasowy()
+    {
+        var dir = Directory.CreateTempSubdirectory("wycenka-tmp");
+        try
+        {
+            // Ścieżka docelowa jest katalogiem – przeniesienie pliku tymczasowego musi się nie udać.
+            var sciezka = Path.Combine(dir.FullName, "katalog.wycenka");
+            Directory.CreateDirectory(sciezka);
+            Assert.ThrowsAny<IOException>(() => PlikKosztorysu.Zapisz(Przyklad(), sciezka));
+            Assert.False(File.Exists(sciezka + ".tmp"));
+        }
+        finally
+        {
+            dir.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void Eksporty_tworza_pliki()
     {
         var k = Przyklad();
