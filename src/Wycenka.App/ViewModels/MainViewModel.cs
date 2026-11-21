@@ -15,12 +15,19 @@ namespace Wycenka.App.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private ObserwatorZmian? _obserwator;
+    private readonly UstawieniaAplikacji _ustawienia;
 
     /// <summary>Okna dialogowe – ustawiane przez widok.</summary>
     public IDialogi? Dialogi { get; set; }
 
-    public MainViewModel()
+    public MainViewModel() : this(UstawieniaAplikacji.Wczytaj())
     {
+    }
+
+    public MainViewModel(UstawieniaAplikacji ustawienia)
+    {
+        _ustawienia = ustawienia;
+        Motyw = ustawienia.Motyw;
         UstawKosztorys(Kosztorys.UtworzNowy(), null);
     }
 

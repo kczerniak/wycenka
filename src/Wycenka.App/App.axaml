@@ -2,15 +2,41 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Wycenka.App.App"
              Name="Wycenka"
-             RequestedThemeVariant="Light">
+             RequestedThemeVariant="Default">
+    <!-- "Default" = zgodnie z ustawieniem Windowsa; użytkownik może to zmienić w menu Widok → Motyw. -->
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="TloAplikacji" Color="#FFFFFFFF" />
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <!-- Ciemnoszare zamiast czystej czerni – łagodniejsze dla oczu wieczorem. -->
+                    <SolidColorBrush x:Key="TloAplikacji" Color="#FF1E1F22" />
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 
     <Application.Styles>
         <FluentTheme>
             <FluentTheme.Palettes>
                 <!-- Stały niebieski akcent (jak ikona), niezależny od koloru akcentu Windowsa. -->
                 <ColorPaletteResources x:Key="Light" Accent="#FF2563EB" />
+                <ColorPaletteResources x:Key="Dark" Accent="#FF3B82F6" />
             </FluentTheme.Palettes>
         </FluentTheme>
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <Style Selector=":is(Window)">
+            <Setter Property="Background" Value="{DynamicResource TloAplikacji}" />
+        </Style>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="{DynamicResource TloAplikacji}" />
+        </Style>
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="Background" Value="{DynamicResource TloAplikacji}" />
+        </Style>
     </Application.Styles>
 </Application>

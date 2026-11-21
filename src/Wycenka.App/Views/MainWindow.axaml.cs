@@ -13,6 +13,9 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        // Motyw mógł się zmienić z menu albo w ustawieniach Windowsa (tryb „Systemowy”).
+        ActualThemeVariantChanged += (_, _) => (DataContext as MainViewModel)?.OdswiezMotyw();
     }
 
     protected override void OnDataContextChanged(System.EventArgs e)
@@ -21,6 +24,7 @@ public partial class MainWindow : Window
         if (DataContext is MainViewModel vm)
         {
             vm.Dialogi = new Dialogi(this);
+            vm.OdswiezMotyw();
             vm.PropertyChanged += (_, a) =>
             {
                 if (a.PropertyName == nameof(MainViewModel.WybranaPozycja) && vm.WybranaPozycja is { } p)
