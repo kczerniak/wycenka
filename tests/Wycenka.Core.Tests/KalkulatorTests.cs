@@ -148,6 +148,45 @@ public class KalkulatorTests
         }
     }
 
+    private static string TekstExcela(Kosztorys k)
+    {
+        var dir = Directory.CreateTempSubdirectory("wycenka-xlsx");
+        try
+        {
+            var xlsx = Path.Combine(dir.FullName, "k.xlsx");
+            EksportExcel.Zapisz(k, xlsx);
+            using var wb = new ClosedXML.Excel.XLWorkbook(xlsx);
+            return string.Join("\n", wb.Worksheet(1).CellsUsed().Select(c => c.GetFormattedString()));
+        }
+        finally
+        {
+            dir.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Eksport_pomija_zerowe_narzuty_i_stawke()
+    {
+        var k = Przyklad();
+        var pelny = TekstExcela(k);
+        Assert.Contains("Koszty zakupu", pelny);
+        Assert.Contains("VAT 8%", pelny);
+        Assert.Contains("Wartość brutto", pelny);
+        Assert.Contains("Stawka r-g", pelny);
+
+        k.ProcentKz = 0;
+        k.ProcentVat = 0;
+        k.StawkaRg = 0;
+        var okrojony = TekstExcela(k);
+        Assert.DoesNotContain("Koszty zakupu", okrojony);
+        Assert.DoesNotContain("VAT", okrojony);
+        Assert.DoesNotContain("Wartość brutto", okrojony);
+        Assert.DoesNotContain("Stawka r-g", okrojony);
+        Assert.Contains("Koszty pośrednie", okrojony);
+        Assert.Contains("Zysk", okrojony);
+        Assert.Contains("Wartość netto", okrojony);
+    }
+
     [Fact]
     public void Eksporty_tworza_pliki()
     {

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -32,6 +34,25 @@ public sealed class UstawieniaAplikacji
 
     /// <summary>Ciemny wariant, na który przełącza przycisk na pasku (Ciemny albo Brązowy).</summary>
     public Motyw OstatniCiemny { get; set; } = Motyw.Ciemny;
+
+    // Historia wpisów do podpowiedzi (najnowsze na początku) – uzupełniana przy zapisie kosztorysu.
+    public List<string> HistoriaPodstawa { get; set; } = [];
+    public List<string> HistoriaOpis { get; set; } = [];
+    public List<string> HistoriaJm { get; set; } = [];
+
+    public const int LimitHistorii = 300;
+
+    /// <summary>Dopisuje wartości na początek historii (bez duplikatów, bez pustych), przycina do limitu.</summary>
+    public static void Dopisz(List<string> historia, IEnumerable<string> nowe)
+    {
+        var lista = nowe.Select(n => n.Trim()).Where(n => n.Length > 0)
+            .Concat(historia)
+            .Distinct(StringComparer.CurrentCultureIgnoreCase)
+            .Take(LimitHistorii)
+            .ToList();
+        historia.Clear();
+        historia.AddRange(lista);
+    }
 
     [JsonIgnore]
     public string Sciezka { get; private set; } = DomyslnaSciezka;

@@ -3,6 +3,7 @@
         xmlns:vm="using:Wycenka.App.ViewModels"
         xmlns:m="using:Wycenka.Core.Model"
         xmlns:c="using:Wycenka.App.Converters"
+        xmlns:v="using:Wycenka.App.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="800"
@@ -59,6 +60,24 @@
         </Style>
         <Style Selector="DataGridCell.liczba TextBox">
             <Setter Property="TextAlignment" Value="Right" />
+        </Style>
+        <Style Selector="TextBlock.komorka">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Margin" Value="12,6" />
+        </Style>
+        <Style Selector="AutoCompleteBox.edycja">
+            <Setter Property="FilterMode" Value="StartsWith" />
+            <Setter Property="MinimumPrefixLength" Value="1" />
+            <Setter Property="MaxDropDownHeight" Value="260" />
+            <Setter Property="VerticalAlignment" Value="Stretch" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="AutoCompleteBox.edycja /template/ TextBox">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Padding" Value="11,6" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="DataGridCell.wyliczona">
             <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumHighBrush}" />
@@ -280,12 +299,49 @@
                             <DataGrid.Columns>
                                 <DataGridTextColumn x:DataType="m:Pozycja" Header="Lp." Width="62" IsReadOnly="True"
                                                     Binding="{Binding Lp}" />
-                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Podstawa" Width="168"
-                                                    Binding="{Binding Podstawa}" />
-                                <DataGridTextColumn x:DataType="m:Pozycja" Header="Opis robót" Width="*" MinWidth="180"
-                                                    Binding="{Binding Opis}" />
-                                <DataGridTextColumn x:DataType="m:Pozycja" Header="j.m." Width="66"
-                                                    Binding="{Binding Jm}" />
+                                <DataGridTemplateColumn Header="Podstawa" Width="168">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:Pozycja">
+                                            <TextBlock Classes="komorka" Text="{Binding Podstawa}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate x:DataType="m:Pozycja">
+                                            <AutoCompleteBox Classes="edycja"
+                                                             Text="{Binding Podstawa, Mode=TwoWay}"
+                                                             ItemsSource="{Binding $parent[Window].((vm:MainViewModel)DataContext).PodpowiedziPodstawa}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                <!-- Opis: cały tekst widoczny (zawijanie), Enter = nowa linia, zatwierdzenie Tab / kliknięciem obok. -->
+                                <DataGridTemplateColumn Header="Opis robót" Width="*" MinWidth="180">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:Pozycja">
+                                            <TextBlock Classes="komorka" Text="{Binding Opis}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate x:DataType="m:Pozycja">
+                                            <v:PoleZPodpowiedziami Classes="wieloliniowy"
+                                                                   Text="{Binding Opis, Mode=TwoWay}"
+                                                                   Podpowiedzi="{Binding $parent[Window].((vm:MainViewModel)DataContext).PodpowiedziOpis}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="j.m." Width="66">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate x:DataType="m:Pozycja">
+                                            <TextBlock Classes="komorka" Text="{Binding Jm}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                    <DataGridTemplateColumn.CellEditingTemplate>
+                                        <DataTemplate x:DataType="m:Pozycja">
+                                            <AutoCompleteBox Classes="edycja"
+                                                             Text="{Binding Jm, Mode=TwoWay}"
+                                                             ItemsSource="{Binding $parent[Window].((vm:MainViewModel)DataContext).PodpowiedziJm}" />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellEditingTemplate>
+                                </DataGridTemplateColumn>
                                 <DataGridTextColumn x:DataType="m:Pozycja" Header="Ilość" Width="80" CellStyleClasses="liczba"
                                                     Binding="{Binding Ilosc, Converter={x:Static c:LiczbaConverter.Instance}, ConverterParameter=0.###}" />
                                 <DataGridTextColumn x:DataType="m:Pozycja" Header="r-g/j.m." Width="88" CellStyleClasses="liczba"

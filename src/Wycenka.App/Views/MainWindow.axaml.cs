@@ -13,6 +13,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        EdycjaKomorek.Podlacz(SiatkaPozycji);
 
         // Motyw mógł się zmienić z menu albo w ustawieniach Windowsa (tryb „Systemowy”).
         ActualThemeVariantChanged += (_, _) => (DataContext as MainViewModel)?.OdswiezMotyw();

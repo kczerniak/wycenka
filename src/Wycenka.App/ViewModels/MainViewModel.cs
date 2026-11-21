@@ -97,6 +97,7 @@ public partial class MainViewModel : ViewModelBase
         _obserwator = new ObserwatorZmian(k);
         _obserwator.Zmiana += OnZmiana;
         Przelicz();
+        OdswiezPodpowiedzi();
         Zmieniony = false;
         WybranyDzial = k.Dzialy.FirstOrDefault();
         OnPropertyChanged(nameof(Tytul));
@@ -107,6 +108,7 @@ public partial class MainViewModel : ViewModelBase
         Zmieniony = true;
         Przelicz();
         if (wlasciwosc == nameof(Kosztorys.Nazwa)) OnPropertyChanged(nameof(Tytul));
+        if (DotyczyPodpowiedzi(wlasciwosc)) OdswiezPodpowiedzi();
     }
 
     private void Przelicz() => Podsumowanie = Kalkulator.Przelicz(Kosztorys);
@@ -181,6 +183,7 @@ public partial class MainViewModel : ViewModelBase
             PlikKosztorysu.Zapisz(Kosztorys, sciezka);
             SciezkaPliku = sciezka;
             Zmieniony = false;
+            ZapamietajWpisy();
             Status = $"Zapisano {sciezka}";
             return true;
         }
@@ -225,6 +228,7 @@ public partial class MainViewModel : ViewModelBase
             var k = Kosztorys;
             await Task.Run(() => eksport(k, sciezka));
             Przelicz();
+            ZapamietajWpisy();
             Status = $"Wyeksportowano {sciezka}";
             await Dialogi.OtworzZewnetrznieAsync(sciezka);
         }

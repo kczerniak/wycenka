@@ -39,11 +39,15 @@ public static class EksportExcel
             row++;
         }
 
-        ws.Cell(row, 1).Value = "Stawka r-g";
-        ws.Cell(row, 1).Style.Font.SetBold();
-        ws.Cell(row, 3).Value = k.StawkaRg;
-        ws.Cell(row, 3).Style.NumberFormat.Format = FormatZl + " \"zł/r-g\"";
-        row += 2;
+        if (k.StawkaRg != 0)
+        {
+            ws.Cell(row, 1).Value = "Stawka r-g";
+            ws.Cell(row, 1).Style.Font.SetBold();
+            ws.Cell(row, 3).Value = k.StawkaRg;
+            ws.Cell(row, 3).Style.NumberFormat.Format = FormatZl + " \"zł/r-g\"";
+            row++;
+        }
+        row++;
 
         string[] naglowki =
             ["Lp.", "Podstawa", "Opis", "j.m.", "Ilość", "r-g/j.m.", "M zł/j.m.", "S zł/j.m.",
@@ -124,6 +128,10 @@ public static class EksportExcel
         ws.PageSetup.FitToPages(1, 0);
     }
 
+    /// <summary>
+    /// Wiersze zestawienia kosztów do PDF i Excela. Narzuty ustawione na 0% są pomijane;
+    /// przy VAT 0% pomijany jest też wiersz brutto (byłby równy netto).
+    /// </summary>
     internal static IEnumerable<(string Etykieta, decimal Wartosc, bool Pogrubienie)> WierszePodsumowania(
         Kosztorys k, Podsumowanie s)
     {
@@ -131,11 +139,17 @@ public static class EksportExcel
         yield return ("Materiały (M)", s.M, false);
         yield return ("Sprzęt (S)", s.S, false);
         yield return ("Razem koszty bezpośrednie", s.Bezposrednie, true);
-        yield return ($"Koszty pośrednie (Kp) {Formaty.Proc(k.ProcentKp)} od R+S", s.Kp, false);
-        yield return ($"Koszty zakupu (Kz) {Formaty.Proc(k.ProcentKz)} od M", s.Kz, false);
-        yield return ($"Zysk (Z) {Formaty.Proc(k.ProcentZ)} od R+S+Kp", s.Z, false);
+        if (k.ProcentKp != 0)
+            yield return ($"Koszty pośrednie (Kp) {Formaty.Proc(k.ProcentKp)} od R+S", s.Kp, false);
+        if (k.ProcentKz != 0)
+            yield return ($"Koszty zakupu (Kz) {Formaty.Proc(k.ProcentKz)} od M", s.Kz, false);
+        if (k.ProcentZ != 0)
+            yield return ($"Zysk (Z) {Formaty.Proc(k.ProcentZ)} od R+S+Kp", s.Z, false);
         yield return ("Wartość netto", s.Netto, true);
-        yield return ($"VAT {Formaty.Proc(k.ProcentVat)}", s.Vat, false);
-        yield return ("Wartość brutto", s.Brutto, true);
+        if (k.ProcentVat != 0)
+        {
+            yield return ($"VAT {Formaty.Proc(k.ProcentVat)}", s.Vat, false);
+            yield return ("Wartość brutto", s.Brutto, true);
+        }
     }
 }

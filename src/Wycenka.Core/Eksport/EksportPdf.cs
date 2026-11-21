@@ -71,7 +71,7 @@ public static class EksportPdf
                     Wiersz("Wykonawca:", k.Wykonawca);
                     Wiersz("Sporządził:", k.Sporzadzil);
                     Wiersz("Data opracowania:", k.DataOpracowania.ToString("dd.MM.yyyy"));
-                    Wiersz("Stawka r-g:", Formaty.Zl(k.StawkaRg) + " zł");
+                    if (k.StawkaRg != 0) Wiersz("Stawka r-g:", Formaty.Zl(k.StawkaRg) + " zł");
                 });
             });
 
