@@ -131,7 +131,8 @@ public static class EksportExcel
     /// <summary>
     /// Wiersze zestawienia kosztów do PDF i Excela. Wiersze o wartości 0,00 zł są pomijane
     /// (np. brak materiałów, narzut 0%). „Razem koszty bezpośrednie” pokazujemy tylko, gdy pod nim
-    /// są narzuty (inaczej równa się netto); „Wartość brutto” tylko przy niezerowym VAT.
+    /// są narzuty (inaczej równa się netto); „Wartość brutto” tylko przy niezerowym VAT,
+    /// a bez VAT wartość netto nazywa się „Wartość całościowa”.
     /// </summary>
     internal static List<(string Etykieta, decimal Wartosc, bool Pogrubienie)> WierszePodsumowania(
         Kosztorys k, Podsumowanie s)
@@ -153,7 +154,8 @@ public static class EksportExcel
             wiersze.AddRange(narzuty);
         }
 
-        wiersze.Add(("Wartość netto", s.Netto, true));
+        // Bez VAT „netto” nic nie znaczy – to po prostu wartość całego kosztorysu.
+        wiersze.Add((s.Vat != 0 ? "Wartość netto" : "Wartość całościowa", s.Netto, true));
         if (s.Vat != 0)
         {
             wiersze.Add(($"VAT {Formaty.Proc(k.ProcentVat)}", s.Vat, false));

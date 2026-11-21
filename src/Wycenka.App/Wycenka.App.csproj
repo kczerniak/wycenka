@@ -9,7 +9,7 @@
     <RootNamespace>Wycenka.App</RootNamespace>
     <Product>Wycenka</Product>
     <Description>Program do sporządzania kosztorysów budowlanych</Description>
-    <Version>0.2.1-test.uwagi.2</Version>
+    <Version>0.2.1-test.uwagi.3</Version>
   </PropertyGroup>
 
   <!-- Publikacja: jeden samowystarczalny plik .exe (bez instalacji .NET u użytkownika). -->

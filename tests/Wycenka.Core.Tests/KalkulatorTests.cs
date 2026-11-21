@@ -172,6 +172,8 @@ public class KalkulatorTests
         Assert.Contains("Koszty zakupu", pelny);
         Assert.Contains("VAT 8%", pelny);
         Assert.Contains("Wartość brutto", pelny);
+        Assert.Contains("Wartość netto", pelny);
+        Assert.DoesNotContain("Wartość całościowa", pelny);
         Assert.Contains("Stawka r-g", pelny);
 
         k.ProcentKz = 0;
@@ -184,7 +186,8 @@ public class KalkulatorTests
         Assert.DoesNotContain("Stawka r-g", okrojony);
         Assert.Contains("Koszty pośrednie", okrojony);
         Assert.Contains("Zysk", okrojony);
-        Assert.Contains("Wartość netto", okrojony);
+        Assert.Contains("Wartość całościowa", okrojony);
+        Assert.DoesNotContain("Wartość netto", okrojony);
     }
 
     [Fact]
@@ -198,7 +201,8 @@ public class KalkulatorTests
 
         var t = TekstExcela(k);
         Assert.Contains("Sprzęt (S)", t);
-        Assert.Contains("Wartość netto", t);
+        Assert.Contains("Wartość całościowa", t);
+        Assert.DoesNotContain("Wartość netto", t);
         Assert.DoesNotContain("Robocizna (R)", t);
         Assert.DoesNotContain("Materiały (M)", t);
         Assert.DoesNotContain("Razem koszty bezpośrednie", t);   // równałoby się netto
