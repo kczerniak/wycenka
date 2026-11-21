@@ -122,7 +122,7 @@ public class MotywTests
             okno.Width = 900;
             okno.Height = 600;
             okno.Show();
-            Assert.Equal("Ciemny", vm.NazwaCiemnego);
+            Assert.Equal("Systemowy", vm.NazwaMotywu);
 
             vm.MotywCiemny = true;
             var paneleCiemne = KolorPaneli(okno);
@@ -136,7 +136,7 @@ public class MotywTests
             vm.PrzelaczMotywCommand.Execute(null);
             Assert.Equal(Motyw.Jasny, vm.Motyw);
             Assert.False(vm.CiemnyAktywny);
-            Assert.Equal("Brązowy", vm.NazwaCiemnego);
+            Assert.Equal("Jasny", vm.NazwaMotywu);
             vm.PrzelaczMotywCommand.Execute(null);
             Assert.Equal(Motyw.Brazowy, vm.Motyw);
 
@@ -149,7 +149,7 @@ public class MotywTests
             Assert.Equal(ThemeVariant.Dark, Application.Current.ActualThemeVariant);
             Assert.Equal(paneleCiemne, KolorPaneli(okno));
             Assert.NotEqual(Color.Parse("#FF3A2C24"), paneleCiemne);
-            Assert.Equal("Ciemny", vm.NazwaCiemnego);
+            Assert.Equal("Ciemny", vm.NazwaMotywu);
             okno.Close();
         }
         finally
@@ -227,6 +227,55 @@ public class MotywTests
                     okno.CaptureRenderedFrame()!.Save(Path.Combine(katalog, $"na-zywo-{i + 1}-{kroki[i]}.png"),
                     new PngBitmapEncoderOptions());
             }
+            okno.Close();
+        }
+        finally
+        {
+            MotywAplikacji.Zastosuj(Motyw.Systemowy);
+            UsunKatalog(plik);
+        }
+    }
+
+    /// <summary>Przycisk motywu na pasku rozwija listę wszystkich motywów (z brązowym).</summary>
+    [AvaloniaFact]
+    public void Przycisk_motywu_rozwija_liste_wszystkich_motywow()
+    {
+        var plik = TymczasowePlikUstawien();
+        try
+        {
+            var vm = new MainViewModel(UstawieniaAplikacji.Wczytaj(plik)) { Motyw = Motyw.Jasny };
+            var okno = new MainWindow { DataContext = vm };
+            okno.WindowState = WindowState.Normal;
+            okno.Width = 900;
+            okno.Height = 500;
+            okno.Show();
+            Dispatcher.UIThread.RunJobs();
+
+            var przycisk = okno.FindControl<Button>("PrzyciskMotywu")!;
+            var lista = Assert.IsType<MenuFlyout>(przycisk.Flyout);
+            lista.ShowAt(przycisk);
+            Dispatcher.UIThread.RunJobs();
+
+            var pozycje = lista.Items.OfType<MenuItem>().ToList();
+            Assert.Equal(["Systemowy (jak Windows)", "Jasny", "Ciemny", "Brązowy"], pozycje.Select(p => (string)p.Header!));
+            Assert.Equal([false, true, false, false], pozycje.Select(p => p.IsChecked));
+
+            var katalog = Environment.GetEnvironmentVariable("WYCENKA_ZRZUTY")
+                          ?? Path.Combine(AppContext.BaseDirectory, "zrzuty");
+            Directory.CreateDirectory(katalog);
+            okno.CaptureRenderedFrame()!.Save(Path.Combine(katalog, "lista-motywow.png"), new PngBitmapEncoderOptions());
+
+            // Prawdziwe kliknięcie myszą w „Brązowy” (lista jest w osobnym oknie podręcznym).
+            var brazowy = pozycje[3];
+            var gora = TopLevel.GetTopLevel(brazowy)!;
+            var srodek = brazowy.TranslatePoint(new Point(brazowy.Bounds.Width / 2, brazowy.Bounds.Height / 2), gora)!.Value;
+            gora.MouseDown(srodek, Avalonia.Input.MouseButton.Left);
+            gora.MouseUp(srodek, Avalonia.Input.MouseButton.Left);
+            Dispatcher.UIThread.RunJobs();
+
+            Assert.Equal(Motyw.Brazowy, vm.Motyw);
+            Assert.Equal("Brązowy", vm.NazwaMotywu);
+            Assert.Equal(MotywAplikacji.Brazowy, Application.Current!.ActualThemeVariant);
             okno.Close();
         }
         finally
